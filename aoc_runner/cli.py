@@ -39,7 +39,6 @@ __version__ = "0.1.0"
     type=click.Path(dir_okay=False, writable=True),
 )
 def aoc(quiet: int, verbose: int, error_file: str = None, trace_file: str = None):
-    dotenv.load_dotenv()
     level = "SUCCESS"
     if quiet > 0:
         level = "ERROR"
@@ -132,6 +131,8 @@ def run(year: int, day: int, part: int, submit: bool, force: bool, _input: IO):
             logger.debug(
                 f"submitting answer={answer}, day={day}, year={year}, part={subpart}"
             )
+            import aocd
+
             aocd.submit(answer=answer, day=day, year=year, part=subpart)
             logger.success(f"done")
     if part is None or part == 2:
@@ -148,6 +149,8 @@ def run(year: int, day: int, part: int, submit: bool, force: bool, _input: IO):
             logger.debug(
                 f"submitting answer={answer}, day={day}, year={year}, part={subpart}"
             )
+            import aocd
+
             aocd.submit(answer=answer, day=day, year=year, part=subpart)
             logger.success(f"done")
     if part == 0:
@@ -161,3 +164,7 @@ def run(year: int, day: int, part: int, submit: bool, force: bool, _input: IO):
     if end is None:
         end = time.perf_counter()
     logger.success(f"Time elapsed: {end - start}s")
+
+
+if __name__ == "__main__":
+    aoc()
