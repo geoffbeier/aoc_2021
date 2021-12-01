@@ -12,20 +12,13 @@ def preprocess():
     return measurements
 
 
+def count_increases(measurements: List[int], interval: int = 1):
+    return sum(b > a for a, b in zip(measurements, measurements[interval:]))
+
+
 def part1(measurements: List[int]):
-    return len(
-        [
-            measurement
-            for n, measurement in enumerate(measurements[1:])
-            if measurement > measurements[n]
-        ]
-    )
+    return count_increases(measurements)
 
 
 def part2(measurements: List[int]):
-    return part1(
-        [
-            measurements[i] + measurements[i + 1] + measurements[i + 2]
-            for i in range(0, len(measurements) - 2)
-        ]
-    )
+    return count_increases(measurements, 3)
