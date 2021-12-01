@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "aoc_2021"
+version = "0.1.0"
+description = "solutions for advent of code 2021"
+authors = ["Geoff Beier <geoff@tuxpup.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+advent-of-code-data = "^1.1.0"
+click = "^8.0.3"
+loguru = "^0.5.3"
+python-dotenv = "^0.19.2"
+click-option-group = "^0.5.3"
+pre-commit = "^2.16.0"
+
+[tool.poetry.dev-dependencies]
+black = "^21.11b1"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+aoc = "aoc_runner.cli:aoc"
