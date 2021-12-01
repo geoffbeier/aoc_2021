@@ -5,7 +5,7 @@ from . import aoc_year
 aoc_day = 1
 
 
-def preprocess(data: List[str]):
+def preprocess():
     measurements = [
         int(item) for item in aocd.get_data(day=aoc_day, year=aoc_year).splitlines()
     ]

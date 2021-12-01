@@ -16,13 +16,10 @@ def find_n(numbers: List[int], count: int, total: int):
             return s
 
 
-def preprocess(data: List[str] = None):
-    if data:
-        expenses = [int(item) for item in data]
-    else:
-        expenses = [
-            int(item) for item in aocd.get_data(day=aoc_day, year=aoc_year).splitlines()
-        ]
+def preprocess():
+    expenses = [
+        int(item) for item in aocd.get_data(day=aoc_day, year=aoc_year).splitlines()
+    ]
     expenses.sort()
     return expenses
 

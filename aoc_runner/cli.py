@@ -39,6 +39,7 @@ __version__ = "0.1.0"
     type=click.Path(dir_okay=False, writable=True),
 )
 def aoc(quiet: int, verbose: int, error_file: str = None, trace_file: str = None):
+    dotenv.load_dotenv()
     level = "SUCCESS"
     if quiet > 0:
         level = "ERROR"
@@ -94,7 +95,12 @@ def run(year: int, day: int, part: int, submit: bool, force: bool, _input: IO):
     data = []
     do_submit = submit
     if _input is not None:
-        data = _input.read().split("\n")
+        import aocd
+
+        def gd(*_, **__):
+            return _input.read()
+
+        aocd.get_data = gd
         logger.debug(f"Processing input from {_input.name}")
         if submit and not force:
             logger.error(
@@ -112,7 +118,7 @@ def run(year: int, day: int, part: int, submit: bool, force: bool, _input: IO):
 
     if isfunction(getattr(day_module, "preprocess", None)):
         logger.debug("Preprocessing data")
-        data = day_module.preprocess(data)
+        data = day_module.preprocess()
 
     start = time.perf_counter()
     end = None
