@@ -11,6 +11,14 @@ from collections import defaultdict, OrderedDict
 aoc_day = 4
 
 
+@dataclass
+class Winner:
+    card: List
+    score: int
+    number: int
+    row: int
+
+
 def get_card_size(cards: List[str]):
     cols = 0
     rows = 0
@@ -64,38 +72,28 @@ def mark_card(card, number):
     return hits
 
 
-def mark_cards(cards: List, number: int, rows: int, cols: int):
-    winning_card = None
-    score = 0
-    winning_row = None
+def play_number(cards: List, number: int, rows: int, cols: int):
+    winning_card_indexes = []
+    winners: List[Winner] = []
     for card_num, card in enumerate(cards):
-        for row_num, row in enumerate(card):
-            if winning_card == card_num:
-                continue
-            if number in row:
-                row[number] = True
-                row_numbers = list(row.keys())
-                if number == 24:
-                    logger.debug(f"Marked 24. Checking {row}")
-                if sum(row[k] for k in row_numbers) == rows:
-                    logger.info(f"found winner: row match")
-                    winning_card = card_num
-                    winning_row = row_num
-                    score = score_card(card) * number
-                    continue
-                idx = row_numbers.index(number)
-                col_marked = 0
+        hits = mark_card(card, number)
+        # if there's no winner, check to see if this is a winner
+        if hits:
+            for h in hits:
+                numbers_in_row = list(card[h].keys())
+                hit_idx = numbers_in_row.index(number)
+                if sum(card[h][k] for k in numbers_in_row) == rows:
+                    winning_card_indexes.append(card_num)
+                    winners.append(Winner(card, score_card(card) * number, number, h))
+                    break
+                col_mark_count = 0
                 for test_row in card:
-                    keys = list(test_row.keys())
-                    if test_row[keys[idx]]:
-                        col_marked += 1
-                if col_marked == cols:
-                    logger.info(f"found winner: column match")
-                    winning_card = card_num
-                    winning_row = row_num
-                    score = score_card(card) * number
-                    continue
-    return winning_card is not None, score, winning_card, winning_row
+                    if test_row[list(test_row.keys())[hit_idx]]:
+                        col_mark_count += 1
+                if col_mark_count == cols:
+                    winning_card_indexes.append(card_num)
+                    winners.append(Winner(card, score_card(card) * number, number, h))
+    return len(winning_card_indexes) != 0, winners, winning_card_indexes
 
 
 def part1(context: Dict[str, Any]):
@@ -103,40 +101,32 @@ def part1(context: Dict[str, Any]):
     logger.info(f"Part 1: playing {len(cards)} cards")
     for number in context["numbers_drawn"]:
         logger.debug(f"Call: {number}")
-        winner, score, _, _ = mark_cards(
+        found_winner, winning_cards, _ = play_number(
             cards, number, context["rows"], context["cols"]
         )
-        if winner:
-            return str(score)
+        if found_winner:
+            return str(winning_cards[0].score)
     return str(None)
 
 
 def part2(context: Dict[str, Any]):
     cards = context["cards"].copy()
     logger.info(f"Part 2: playing {len(cards)} cards")
-    last_winning_score = 0
-    last_winning_card = None
+    winners: List[Winner] = []
     for number in context["numbers_drawn"]:
-        winner, score, card_idx, row_idx = mark_cards(
+        found_winner, winning_cards, winning_card_indexes = play_number(
             cards, number, context["rows"], context["cols"]
         )
-        if winner:
-            if score:
-                last_winning_score = score
-                last_winning_card = cards.pop(card_idx)
-            else:
-                logger.info(f"Got a winning card with a zero score. Skipping")
-                cards.pop(card_idx)
-            logger.info(
-                f"Found a winner. Removing card. Winning number was {number}. Winning score was {score}. Removing card {card_idx}"
-            )
-            logger.info(f"Part 2: playing {len(cards)} cards")
-            if not cards:
-                return str(score)
-    logger.info(
-        f"Done calling numbers but not out of cards. Last winning card: {last_winning_card}\nLast winning score: {last_winning_score}"
-    )
-    return str(last_winning_score)
+        if found_winner:
+            if len(winning_card_indexes) > 1:
+                logger.warning(
+                    f"Multiple winners in one round. Undefined by rules. {winning_card_indexes}"
+                )
+            for winner in winning_cards:
+                winners.append(winner)
+            for i in sorted(winning_card_indexes, reverse=True):
+                cards.pop(i)
+    return str(winners[-1].score)
 
 
 tests = [
