@@ -1,5 +1,6 @@
 import sys
 from dataclasses import dataclass
+from functools import cache
 from math import prod
 from typing import List, Dict, Any, Tuple
 import aocd
@@ -11,6 +12,7 @@ from collections import defaultdict, OrderedDict
 aoc_day = 5
 
 
+@cache
 def points(
     start: Tuple[int, int], end: Tuple[int, int], include_diagonal: bool = False
 ):
@@ -56,7 +58,7 @@ def print_board(hits):
     for y in range(10):
         line = ""
         for x in range(10):
-            line += "." if hits[Point(x, y)] == 0 else str(hits[Point(x, y)])
+            line += "." if hits[(x, y)] == 0 else str(hits[(x, y)])
         print(line)
 
 
