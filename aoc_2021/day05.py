@@ -11,48 +11,41 @@ from collections import defaultdict, OrderedDict
 aoc_day = 5
 
 
-@dataclass(eq=True, frozen=True)
-class Point:
-    x: int
-    y: int
-
-    def __str__(self):
-        return f"({self.x},{self.y})"
-
-
-def points(start: Point, end: Point, include_diagonal: bool = False):
+def points(
+    start: Tuple[int, int], end: Tuple[int, int], include_diagonal: bool = False
+):
     hits = set()
-    if start.x != end.x and start.y != end.y:
+    if start[0] != end[0] and start[1] != end[1]:
         if not include_diagonal:
             return hits
-    hits.add(str(start))
-    hits.add(str(end))
+    hits.add(start)
+    hits.add(end)
     dx = 0
     dy = 0
-    if start.x < end.x:
+    if start[0] < end[0]:
         dx = 1
-    elif start.x > end.x:
+    elif start[0] > end[0]:
         dx = -1
-    if start.y < end.y:
+    if start[1] < end[1]:
         dy = 1
-    elif start.y > end.y:
+    elif start[1] > end[1]:
         dy = -1
     curr = start
     while curr != end:
-        curr = Point(curr.x + dx, curr.y + dy)
-        hits.add(str(curr))
+        curr = (curr[0] + dx, curr[1] + dy)
+        hits.add(curr)
     return hits
 
 
 def preprocess():
     context = {"raw": aocd.get_data(day=aoc_day, year=aoc_year).splitlines()}
-    segments: List[Tuple[Point, Point]] = []
+    segments: List[Tuple[Tuple[int, int], Tuple[int, int]]] = []
     for line in context["raw"]:
         ss, es = line.strip().split(" -> ")
         x1, y1 = ss.split(",")
-        start = Point(int(x1), int(y1))
+        start = (int(x1), int(y1))
         x2, y2 = es.split(",")
-        end = Point(int(x2), int(y2))
+        end = (int(x2), int(y2))
         segments.append((start, end))
 
     context["segments"] = segments
@@ -68,7 +61,7 @@ def print_board(hits):
 
 
 def part1(context: Dict[str, Any]):
-    hits: Dict[str, int] = defaultdict(int)
+    hits: Dict[Tuple[int, int], int] = defaultdict(int)
     for s in context["segments"]:
         for p in points(s[0], s[1]):
             hits[p] += 1
@@ -77,7 +70,7 @@ def part1(context: Dict[str, Any]):
 
 
 def part2(context: Dict[str, Any]):
-    hits: Dict[str, int] = defaultdict(int)
+    hits: Dict[Tuple[int, int], int] = defaultdict(int)
     for s in context["segments"]:
         for p in points(s[0], s[1], include_diagonal=True):
             hits[p] += 1
