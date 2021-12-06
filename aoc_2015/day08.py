@@ -8,117 +8,83 @@ import aocd
 from . import aoc_year
 from loguru import logger
 
-import _md5
-
-aoc_day = 7
+aoc_day = 8
 
 
-@dataclass
-class Circuit:
-    op: str
-    args: Tuple
-    dest: str
+def unescape(raw: str):
+    parsed = []
+    i = 0
+    while i < len(raw):
+        if raw[i] != "\\":
+            parsed.append(raw[i])
+        else:
+            if raw[i + 1] == "\\" or raw[i + 1] == '"':
+                parsed.append(raw[i + 1])
+                i += 1
+            elif raw[i + 1] == "x":
+                code = raw[i + 2 : i + 4]
+                parsed.append(chr(int(code, 16)))
+                i += 3
+        i += 1
+    return "".join(parsed)
+
+
+def escape(raw: str):
+    escaped = ['"']
+    for c in raw:
+        if c == '"':
+            escaped.append("\\")
+        elif c == "\\":
+            escaped.append("\\")
+        escaped.append(c)
+    escaped.append('"')
+    # logger.debug(f"{raw}({len(raw)}) => {''.join(escaped)}({len(e)})")
+    return "".join(escaped)
 
 
 def preprocess():
-    circuits = []
-    for line in aocd.get_data(day=aoc_day, year=aoc_year).splitlines():
-        lhs, rhs = line.split(" -> ")
-        if " AND " in lhs:
-            args = lhs.split(" AND ")
-            circuits.append(Circuit("AND", (args[0], args[1]), rhs))
-        elif " OR " in lhs:
-            args = lhs.split(" OR ")
-            circuits.append(Circuit("OR", (args[0], args[1]), rhs))
-        elif " LSHIFT " in lhs:
-            args = lhs.split(" LSHIFT ")
-            circuits.append(Circuit("LSHIFT", (args[0], int(args[1])), rhs))
-        elif " RSHIFT " in lhs:
-            args = lhs.split(" RSHIFT ")
-            circuits.append(Circuit("RSHIFT", (args[0], int(args[1])), rhs))
-        elif lhs.startswith("NOT"):
-            args = lhs.split("NOT ")
-            circuits.append(Circuit("NOT", (args[1],), rhs))
-        else:
-            circuits.append(Circuit("SIGNAL", (lhs,), rhs))
-    return circuits
+    context = {
+        "raw": aocd.get_data(day=aoc_day, year=aoc_year).splitlines(),
+        "parsed": [],
+    }
+    for s in context["raw"]:
+        context["parsed"].append(unescape(s.strip()[1:-1]))
+    return context
 
 
-def run_circuits(circuits: List[Circuit], override: Dict = None):
-    wires = {c.dest: c for c in circuits}
-    if override:
-        for key in override.keys():
-            wires[key] = override[key]
-    # checking for signal and making sure all inputs signal before we're done was the tricky part here.
-    # The phrase "A gate provides no signal until all of its inputs have a signal." in the puzzle
-    # carried a lot of water, and the sample case did not demonstrate it at all.
-    while sum(isinstance(v, Circuit) for v in wires.values()):
-        for c in wires.values():
-            if isinstance(c, int):
-                continue
-            if c.op == "SIGNAL":
-                src = int(c.args[0]) if c.args[0].isdecimal() else wires[c.args[0]]
-                if isinstance(src, int):
-                    wires[c.dest] = src
-            elif c.op == "AND":
-                lhs = int(c.args[0]) if c.args[0].isdecimal() else wires[c.args[0]]
-                rhs = int(c.args[1]) if c.args[1].isdecimal() else wires[c.args[1]]
-                if isinstance(lhs, int) and isinstance(rhs, int):
-                    wires[c.dest] = lhs & rhs
-            elif c.op == "OR":
-                lhs = int(c.args[0]) if c.args[0].isdecimal() else wires[c.args[0]]
-                rhs = int(c.args[1]) if c.args[1].isdecimal() else wires[c.args[1]]
-                if isinstance(lhs, int) and isinstance(rhs, int):
-                    wires[c.dest] = wires[c.args[0]] | wires[c.args[1]]
-            elif c.op == "LSHIFT":
-                if isinstance(wires[c.args[0]], int):
-                    wires[c.dest] = wires[c.args[0]] << c.args[1]
-            elif c.op == "RSHIFT":
-                if isinstance(wires[c.args[0]], int):
-                    wires[c.dest] = wires[c.args[0]] >> c.args[1]
-            elif c.op == "NOT":
-                if isinstance(wires[c.args[0]], int):
-                    wires[c.dest] = ~wires[c.args[0]] & 65535
-    return wires
+def part1(context: Dict[str, Any]):
+    code_len = sum(len(s.strip()) for s in context["raw"])
+    repr_len = sum(len(s) for s in context["parsed"])
+    return str(code_len - repr_len)
 
 
-def part1(circuits: List[Circuit]):
-    wires = run_circuits(circuits)
-    return str(wires["a"])
-
-
-def part2(circuits: List[Circuit]):
-    # if this wasn't so fast, there would need to be a way for part 2 to otherwise know the result of part 1. this
-    # interface was made in 2020 (mostly) and tweaked in 2021... if it turns out more common than i remember for old
-    # puzzles to have interaction between the parts like this, it may make some sense to plan for shared state or
-    # similar.
-    wires = run_circuits(circuits)
-    wires = run_circuits(circuits, override={"b": wires["a"]})
-    return str(wires["a"])
+def part2(context: Dict[str, Any]):
+    escaped = []
+    for s in context["raw"]:
+        escaped.append(escape(s.strip()))
+    code_len = sum(len(s.strip()) for s in context["raw"])
+    escaped_len = sum(len(s) for s in escaped)
+    return str(escaped_len - code_len)
 
 
 tests = [
     (
-        """123 -> x
-456 -> y
-x AND y -> d
-x OR y -> e
-x LSHIFT 2 -> f
-y RSHIFT 2 -> g
-NOT x -> h
-NOT y -> i
+        """""
+"abc"
+"aaa\\"aaa"
+"\\x27"
 """,
-        {
-            "d": 72,
-            "e": 507,
-            "f": 492,
-            "g": 114,
-            "h": 65412,
-            "i": 65079,
-            "x": 123,
-            "y": 456,
-        },
-        run_circuits,
+        12,
+        part1,
+    ),
+    (
+        """""
+"abc"
+"aaa\\"aaa"
+"\\x27"
+""",
+        19,
+        part2,
     ),
 ]
 
