@@ -1,6 +1,6 @@
 import itertools
 import re
-from collections import defaultdict, namedtuple
+from collections import defaultdict, namedtuple, deque
 from dataclasses import dataclass
 from itertools import product
 from math import prod
@@ -25,30 +25,26 @@ def preprocess():
     return context
 
 
-def get_run(digits: List[str]):
-    run = [digits.pop(0)]
+def get_run(digits: deque[str]):
+    run = [digits.popleft()]
     while digits and digits[0] == run[0]:
-        run.append(digits.pop(0))
+        run.append(digits.popleft())
     return run
 
 
-def play(digits: List[str]):
-    result = []
-    logger.debug(f"playing {digits}")
+def play(digits: deque[str]):
+    result = deque()
     while len(digits):
         current_run = get_run(digits)
-        logger.debug(f"got run: {current_run}")
-        logger.debug(f"run: {len(current_run)} {current_run[0]}")
         result.append(str(len(current_run)))
         result.append(current_run[0])
-    return str("".join(result))
+    return result
 
 
 def playtest(context: AOCContext):
-    digits = list(context.start)
+    digits = deque(context.start)
     for i in range(5):
-        digits = list(play(digits))
-        logger.debug(f"{''.join(digits)}")
+        digits = play(digits)
     return "".join(digits)
 
 
@@ -65,10 +61,17 @@ def part1(context: AOCContext):
     return str(len(results))
 
 
-def part2(context: AOCContext):
+def part2_fast(context: AOCContext):
     digits = context.start
     results = list(itertools.islice(look_and_say(digits), 51))[-1]
     return str(len(results))
+
+
+def part2(context: AOCContext):
+    digits = deque(context.start)
+    for i in range(50):
+        digits = play(digits)
+    return str(len(digits))
 
 
 tests = [
@@ -77,6 +80,12 @@ tests = [
 """,
         "312211",
         playtest,
+    ),
+    (
+        """3113322113
+""",
+        "4666278",
+        part2,
     ),
 ]
 
