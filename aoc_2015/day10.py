@@ -52,16 +52,23 @@ def playtest(context: AOCContext):
     return "".join(digits)
 
 
+# adapted from https://www.rosettacode.org/wiki/Look-and-say_sequence#Python
+def look_and_say(digits: str):
+    while True:
+        yield digits
+        digits = "".join(str(len(list(g))) + k for k, g in itertools.groupby(digits))
+
+
 def part1(context: AOCContext):
-    digits = list(context.start)
-    for i in range(40):
-        digits = list(play(digits))
-    return str(len(digits))
+    digits = context.start
+    results = list(itertools.islice(look_and_say(digits), 41))[-1]
+    return str(len(results))
 
 
 def part2(context: AOCContext):
-    ...
-    return str(None)
+    digits = context.start
+    results = list(itertools.islice(look_and_say(digits), 51))[-1]
+    return str(len(results))
 
 
 tests = [
