@@ -1,5 +1,7 @@
 import itertools
 import re
+import sys
+import operator
 from collections import defaultdict, namedtuple
 from dataclasses import dataclass
 from itertools import product
@@ -10,6 +12,22 @@ from . import aoc_year
 from loguru import logger
 
 aoc_day = 10
+try:
+    if __name__ != "__main__":
+        assert str(aoc_day) in __name__
+except AssertionError:
+    logger.error(
+        f"aoc_day={aoc_day} but this module name is {__name__}. aocd.get_data() is not going to behave properly."
+    )
+    m = re.match(r".*.day(\d+?)$", __name__)
+    if m:
+        aoc_day = int(m.groups()[0])
+        logger.warning(
+            f"Attempting to self-correct based on {__name__}. Now aoc_day={aoc_day}"
+        )
+    else:
+        logger.error(f"Unable to guess a day from {__name__}. Exiting")
+        sys.exit(1)
 
 
 @dataclass
