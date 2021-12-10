@@ -76,7 +76,8 @@ class SyntaxChecker:
                         self.add_error(ll, cc, c, expected)
                         break
             if not self.errors or (self.errors and self.errors[-1][0] != ll):
-                self.add_completion(ll, closing_sequence)
+                if closing_sequence:
+                    self.add_completion(ll, closing_sequence)
 
 
 def preprocess():
@@ -94,13 +95,16 @@ def preprocess():
 def part1(context: AOCContext):
     checker = SyntaxChecker(context)
     checker.check_input()
-    logger.info(f"Found {len(checker.errors)} errors")
+    logger.info(f"Found {len(checker.errors)} errors in {len(context.raw)} lines.")
     return str(sum(context.scoring_table[e[2]] for e in checker.errors))
 
 
 def part2(context: AOCContext):
     checker = SyntaxChecker(context)
     checker.check_input()
+    logger.info(
+        f"Found {len(checker.completions)} suggested completions in {len(context.raw)} lines."
+    )
     scores = []
     for c in checker.completions:
         score = 0
