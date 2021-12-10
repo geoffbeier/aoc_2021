@@ -9,6 +9,8 @@ from itertools import product
 from math import prod
 from typing import List, Dict, Any, Tuple
 import aocd
+import numpy
+
 from . import aoc_year
 from loguru import logger
 
@@ -43,33 +45,40 @@ def preprocess():
     return context
 
 
-def elves(house: int):
-    # https://stackoverflow.com/a/6800214
-    factors = reduce(
-        list.__add__,
-        ([i, house // i] for i in range(1, int(house ** 0.5) + 1) if house % i == 0),
-    )
-    return set(factors)
-
-
-def presents_delivered(house):
-    return sum(elves(house)) * 10
-
-
 def part1(context: AOCContext):
-    house = 1000000
-    delivered = presents_delivered(house)
-    while delivered < context.presents:
-        ee = elves(house)
-        logger.debug(f"{ee} delivered({house}): {delivered} < {context.presents}")
-        house += 1
-        delivered = presents_delivered(house)
-    return str(house)
+    min_deliveries = context.presents // 10
+    max_houses = min_deliveries
+    logger.info(
+        f"Finding first house to receive at least {context.presents} presents. Examining up to {max_houses} houses."
+    )
+    presents_delivered = numpy.zeros(max_houses + 1, dtype=int)
+    first_house = 0
+    for elf in range(1, max_houses + 1):
+        n_visited = max_houses // elf
+        visits = elf * numpy.array(range(1, n_visited - 1), dtype=int)
+        presents_delivered[visits] += elf * 10
+        if presents_delivered[elf] >= context.presents:
+            first_house = elf
+            break
+    return str(first_house)
 
 
 def part2(context: AOCContext):
-    ...
-    return str(None)
+    min_deliveries = context.presents // 10
+    max_houses = min_deliveries
+    logger.info(
+        f"Finding first house to receive at least {context.presents} presents. Examining up to {max_houses} houses."
+    )
+    presents_delivered = numpy.zeros(max_houses + 1, dtype=int)
+    first_house = 0
+    for elf in range(1, max_houses + 1):
+        n_visited = min(50, max_houses // elf)
+        visits = elf * numpy.array(range(1, n_visited - 1), dtype=int)
+        presents_delivered[visits] += elf * 11
+        if presents_delivered[elf] >= context.presents:
+            first_house = elf
+            break
+    return str(first_house)
 
 
 tests = [
