@@ -8,6 +8,8 @@ from itertools import product
 from math import prod
 from typing import List, Dict, Any, Tuple, Set
 import aocd
+
+from advent_of_code_ocr import convert_6
 from . import aoc_year
 from loguru import logger
 
@@ -28,7 +30,6 @@ except AssertionError:
     else:
         logger.error(f"Unable to guess a day from {__name__}. Exiting")
         sys.exit(1)
-
 
 Point = namedtuple("Point", "x y")
 
@@ -97,13 +98,38 @@ def print_visible(points: Set[Point], fill: str = "."):
         print("".join(line))
 
 
+def get_letter_bitmap(points: Set[Point], index: int):
+    min_x = index * 5
+    max_x = index * 5 + 4
+    max_y = max(p.y for p in points)
+    lines = []
+    for y in range(max_y + 1):
+        line = []
+        for x in range(min_x, max_x + 1):
+            if Point(x, y) in points:
+                line.append("#")
+            else:
+                line.append(".")
+        lines.append("".join(line))
+    return "\n".join(lines)
+
+
+def recognize_letters(points: Set[Point]):
+    n_letters = 8  # from the puzzle
+    found_letters = []
+    for i in range(n_letters):
+        bitmap = get_letter_bitmap(points, i)
+        found_letters.append(convert_6(bitmap))
+    return "".join(found_letters)
+
+
 def part2(context: AOCContext):
     visible_dots = context.visible_dots
     for direction, loc in context.folds:
-        logger.info(f"Folding along {direction}={loc}")
         visible_dots = fold(visible_dots, direction, loc)
     print_visible(visible_dots, fill=" ")
-    return str(None)
+    letters = recognize_letters(visible_dots)
+    return str(letters)
 
 
 tests = [

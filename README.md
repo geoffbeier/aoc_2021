@@ -51,3 +51,16 @@ input saved, you can use
 ```bash
 poetry run aoc run -y $YEAR -d $DAY /path/to/saved/input.txt
 ```
+
+## Credits
+
+This project uses [advent-of-code-ocr](https://github.
+com/bsoyka/advent-of-code-ocr), by Benjamin Soyka. It's included in
+this repository because the version available in PyPi lists an old numpy as
+a requirement, and I couldn't figure out how to get poetry to consume it
+from my github fork. It's used under the MIT license, which is included in
+the package.
+
+It also uses Wim Glenn's [excellent advent-of-code-data](https://github.
+com/wimglenn/advent-of-code-data) library to download input and submit
+solutions more conveniently.
