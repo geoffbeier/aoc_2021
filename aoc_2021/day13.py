@@ -85,14 +85,14 @@ def part1(context: AOCContext):
     return str(len(visible_dots))
 
 
-def print_visible(points: Set[Point], fill: str = "."):
+def print_visible(points: Set[Point], stroke: str = "██", fill: str = "."):
     max_x = max(p.x for p in points)
     max_y = max(p.y for p in points)
     for y in range(max_y + 1):
         line = []
         for x in range(max_x + 1):
             if Point(x, y) in points:
-                line.append("#")
+                line.append(stroke)
             else:
                 line.append(fill)
         print("".join(line))
@@ -127,7 +127,7 @@ def part2(context: AOCContext):
     visible_dots = context.visible_dots
     for direction, loc in context.folds:
         visible_dots = fold(visible_dots, direction, loc)
-    print_visible(visible_dots, fill=" ")
+    print_visible(visible_dots, fill="  ")
     letters = recognize_letters(visible_dots)
     return str(letters)
 
