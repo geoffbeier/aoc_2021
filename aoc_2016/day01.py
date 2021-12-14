@@ -11,7 +11,7 @@ import aocd
 from . import aoc_year
 from loguru import logger
 
-aoc_day = 10
+aoc_day = 1
 try:
     if __name__ != "__main__":
         assert str(aoc_day) in __name__
@@ -33,32 +33,80 @@ except AssertionError:
 @dataclass
 class AOCContext:
     raw: List[str]
+    directions: List[Tuple[str, int]]
 
 
 def preprocess():
     raw = aocd.get_data(day=aoc_day, year=aoc_year).splitlines()
-    context = AOCContext(raw)
+    directions = []
+    for step in raw[0].split(", "):
+        directions.append((step[0], int(step[1:])))
+    context = AOCContext(raw, directions)
     return context
 
 
+Point = namedtuple("Point", "x y")
+
+
 def part1(context: AOCContext):
-    ...
-    return str(None)
+    start = Point(0, 0)
+    current = start
+    vectors = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+    heading = 0
+    for step in context.directions:
+        if step[0] == "R":
+            heading += 1
+        elif step[0] == "L":
+            heading -= 1
+        vector = vectors[heading % len(vectors)]
+        current = Point(
+            current.x + step[1] * vector[0], current.y + step[1] * vector[1]
+        )
+        logger.debug(f"{step} -> {current}")
+    logger.info(f"Final destination: {current}")
+    distance = abs(current.x - start.x) + abs(current.y - start.y)
+    return str(distance)
 
 
 def part2(context: AOCContext):
-    ...
-    return str(None)
+    start = Point(0, 0)
+    current = start
+    vectors = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+    heading = 0
+    visited = set()
+    for step in context.directions:
+        if step[0] == "R":
+            heading += 1
+        elif step[0] == "L":
+            heading -= 1
+        vector = vectors[heading % len(vectors)]
+        blocks = []
+        for _ in range(step[1]):
+            current = Point(current.x + vector[0], current.y + vector[1])
+            if current in visited:
+                logger.info(f"Second visit to {current}")
+                break
+            visited.add(current)
+        else:
+            continue
+        break
+    logger.info(f"stopping at: {current}")
+    distance = abs(current.x - start.x) + abs(current.y - start.y)
+    return str(distance)
 
 
 tests = [
     (
-        """London to Dublin = 464
-London to Belfast = 518
-Dublin to Belfast = 141
+        """R2, R2, R2
 """,
-        605,
+        2,
         part1,
+    ),
+    (
+        """R8, R4, R4, R8
+""",
+        4,
+        part2,
     ),
 ]
 
