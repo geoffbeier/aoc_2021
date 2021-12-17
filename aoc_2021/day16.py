@@ -1,15 +1,13 @@
-import itertools
 import re
 import sys
-import operator
-from collections import defaultdict, namedtuple
 from dataclasses import dataclass
-from itertools import product
 from math import prod
-from typing import List, Dict, Any, Tuple
+from typing import List
+
 import aocd
-from . import aoc_year
 from loguru import logger
+
+from . import aoc_year
 
 aoc_day = 16
 try:
@@ -37,26 +35,20 @@ class Packet:
     cur: int
     sub_packets: List["Packet"]
 
-    def __init__(self, bitstream: str = None):
-        assert bitstream is not None
+    def __init__(self, bitstream: str):
         self.version = 0
         self.type_id = 0
         self.bitstream = bitstream
         self.cur = 0
         self.sub_packets = []
-        if self.bitstream is not None:
-            self.parse()
-            logger.debug(f"Packet: parsed {self.cur} bits")
+        self.parse()
 
     def read_bits(self, num_bits: int):
         rv = int(self.bitstream[self.cur : self.cur + num_bits], 2)
         self.cur += num_bits
         return rv
 
-    def parse(self, bitstream: str = None):
-        if bitstream:
-            self.bitstream = bitstream
-            self.cur = 0
+    def parse(self):
         self.version = self.read_bits(3)
         self.type_id = self.read_bits(3)
         return self.cur
@@ -70,10 +62,8 @@ class LiteralValuePacket(Packet):
         self._value = 0
         super().__init__(bitstream)
 
-    def parse(self, bitstream: str = None):
-        super().parse(bitstream)
-        if bitstream:
-            self._value = 0
+    def parse(self):
+        super().parse()
         if self.type_id != 4:
             raise ValueError(
                 f"LiteralValuePacket: expected type_id 4, got type_id {self.type_id}"
@@ -95,12 +85,10 @@ class OperatorPacket(Packet):
     def __init__(self, bitstream: str = None):
         super().__init__(bitstream)
 
-    def parse(self, bitstream: str = None):
-        super().parse(bitstream)
+    def parse(self):
+        super().parse()
         if self.type_id == 4:
             raise ValueError(f"OperatorPacket: expected any type_id other than 4")
-        if bitstream:
-            self.sub_packets = []
         length_type = self.read_bits(1)
         if length_type == 0:
             length = self.read_bits(15)
@@ -195,12 +183,6 @@ tests = [
 
 
 def test(start: int = 0, finish: int = len(tests)):
-    # aocd.get_data = lambda *_,**__: "D2FE28\n"
-    # ctx = preprocess()
-    # lvp = LiteralValuePacket()
-    # bits_consumed = lvp.parse(ctx.bitstream)
-    # logger.debug(f"value={lvp.value}, consumed={bits_consumed}")
-    # assert lvp.value == 2021
     aocd.get_data = lambda *_, **__: "38006F45291200\n"
     ctx = preprocess()
     pkt = make_packet(ctx.bitstream)
