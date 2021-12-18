@@ -53,11 +53,9 @@ def part2(context: AOCContext):
 
 tests = [
     (
-        """London to Dublin = 464
-London to Belfast = 518
-Dublin to Belfast = 141
+        """target area: x=20..30, y=-10..-5
 """,
-        605,
+        45,
         part1,
     ),
 ]
@@ -65,11 +63,7 @@ Dublin to Belfast = 141
 
 def test(start: int = 0, finish: int = len(tests)):
     for i, t in enumerate(tests[start:finish]):
-
-        def gd(*args, **kwargs):
-            return t[0]
-
-        aocd.get_data = gd
+        aocd.get_data = lambda *_, **__: t[0]
         result = t[2](preprocess())
         if f"{result}" != f"{t[1]}":
             logger.error(f"Test {start + i + 1} failed: got {result}, expected {t[1]}")
