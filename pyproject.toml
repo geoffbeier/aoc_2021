@@ -6,7 +6,7 @@ authors = ["Geoff Beier <geoff@tuxpup.com>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = "=3.9"
+python = ">=3.10,<3.11"
 advent-of-code-data = "^1.1.0"
 click = "^8.0.3"
 loguru = "^0.5.3"
