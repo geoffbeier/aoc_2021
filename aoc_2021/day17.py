@@ -1,15 +1,14 @@
-import itertools
 import re
 import sys
-import operator
-from collections import defaultdict, namedtuple
+from collections import namedtuple
 from dataclasses import dataclass
 from itertools import product
-from math import prod
-from typing import List, Dict, Any, Tuple, Set
+from typing import List, Tuple, Set
+
 import aocd
-from . import aoc_year
 from loguru import logger
+
+from . import aoc_year
 
 aoc_day = 17
 try:
