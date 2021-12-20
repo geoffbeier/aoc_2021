@@ -38,8 +38,8 @@ except AssertionError:
 # and checked in as `day20_slow.py`
 
 char_map = {
-    "#": "1",
-    ".": "0",
+    "#": 1,
+    ".": 0,
 }
 
 pixel_region = [(x, y) for y, x in product([-1, 0, 1], [-1, 0, 1])]
@@ -50,7 +50,7 @@ class TrenchImage:
     enhancement_algorithm: List[str]
     w: int
     h: int
-    filler: str
+    filler: int
 
     def __init__(self, image_lines: str, enhancment_algorithm: str):
         image_lines = image_lines.split()
@@ -58,7 +58,7 @@ class TrenchImage:
         self.h = len(image_lines)
         self.grid = [[char_map[c] for c in line] for line in image_lines]
         self.enhancement_algorithm = [char_map[c] for c in enhancment_algorithm]
-        self.filler = "0"
+        self.filler = 0
         self.expand_border()
 
     def expand_border(self, increment: int = 1):
@@ -82,9 +82,9 @@ class TrenchImage:
             bits = ""
             for dx, dy in pixel_region:
                 if 0 <= xx + dx < self.w and 0 <= yy + dy < self.h:
-                    bits += self.grid[yy + dy][xx + dx]
+                    bits += f"{self.grid[yy + dy][xx + dx]}"
                 else:
-                    bits += self.filler
+                    bits += f"{self.filler}"
             return int(bits, 2)
 
         for y in range(self.h):
@@ -93,7 +93,7 @@ class TrenchImage:
                 row.append(self.enhancement_algorithm[index(x, y)])
             new_grid.append(row)
         self.grid = new_grid
-        self.filler = self.enhancement_algorithm[int(self.filler * 9, 2)]
+        self.filler = self.enhancement_algorithm[int(f"{self.filler}" * 9, 2)]
         self.expand_border()
 
     def to_bitmap(self, dark: str = ".", light: str = "#"):
@@ -119,15 +119,14 @@ def part1(context: AOCContext):
     steps = 2
     for _ in range(steps):
         context.image.enhance()
-        context.image.expand_border()
-    return str(sum([c.count("1") for c in context.image.grid]))
+    return str(sum([c.count(1) for c in context.image.grid]))
 
 
 def part2(context: AOCContext):
     steps = 50
     for i in range(steps):
         context.image.enhance()
-    return str(sum([c.count("1") for c in context.image.grid]))
+    return str(sum([c.count(1) for c in context.image.grid]))
 
 
 tests = [
